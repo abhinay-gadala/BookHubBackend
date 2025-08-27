@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import routes from "./routes/userroute.js";
 import router from "./routes/bookroutes.js";
+import booksRouter from './routes/clientRoutes.js';
 import cors from "cors";
  // ✅ correct import
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(cors());
 app.use("/api/users", routes);
 app.use("/api", router);
+app.use("/api", booksRouter);
 // Routes
 
 
