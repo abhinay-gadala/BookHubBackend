@@ -1,0 +1,11 @@
+// routes/bookRoutes.js
+import { Router } from "express";
+import { getBooks, postBooks, getBooksDetailsIndividual } from "../controllers/bookcontrollers.js";
+
+const router = Router();
+
+router.get("/books", getBooks);   // fetch all books
+router.post("/books", postBooks); // add multiple books
+router.get("/books/:id", getBooksDetailsIndividual); // fetch book details by ID
+
+export default router;
