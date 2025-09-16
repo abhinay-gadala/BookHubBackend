@@ -3,22 +3,17 @@ import bookData from "../models/booksModel.js";
 
 export const postBooks = async (req, res) => {
   try {
-    // The request body is expected to be an array of book data objects.
     const booksToInsert = req.body;
-    
-    // Check if the request body is an array and contains data
-    if (!Array.isArray(booksToInsert) || booksToInsert.length === 0) {
+    if (!booksToInsert || Array.isArray(booksToInsert)) {
       return res.status(400).send({ message: "Request body must be an array of books." });
     }
+    const insertedBooks = await bookData.create(booksToInsert);
 
-    // Insert all books from the request body into the database at once.
-    // The insertMany method is much more efficient for bulk operations.
-    const insertedBooks = await bookData.insertMany(booksToInsert);
-
-    // Send a success response with the inserted books.
-    res.status(201).send(insertedBooks);
+    res.status(201).json({
+        message: "successful uploaded",
+        insertedBooks
+    });
   } catch (error) {
-    // Catch validation or other database errors and send a 400 response.
     res.status(400).send(error);
   }
 };
@@ -52,4 +47,53 @@ export const getBooksDetailsIndividual = async (req, res) => {
     } catch (error) {
         res.status(500).send(error);
     }
+}
+
+export const updateBooks = async (req, res) => {
+   try{
+      const bookupdateData = req.body
+
+      if(!bookupdateData.BookName || !bookupdateData.imageUrl){
+        res.status(401).json({
+            message: "Invalid data"
+        })
+      }
+
+      const newData = await bookData.updateOne(
+        { BookName: bookupdateData.BookName},
+        { $set: { imageUrl: bookupdateData.imageUrl}}
+      )
+
+      res.status(201).json({
+        message: "Successful updated",
+        newData
+      })
+   }
+   catch(error){
+     res.status(500).json({
+        message: error.message
+     })
+   }
+}
+
+export const deleteData = async (req, res) => {
+  try{
+    const { id } = req.params;
+  
+  const newUser = await bookData.findByIdAndDelete(id)
+
+  if (!newUser) {
+      return res.status(404).json({ message: "No document found with that ID" });
+    }
+
+   res.status(200).json({message: "deleted Successful"})
+  }
+  catch(e){
+     res.status(500).json({
+      message: e.message
+     })
+  }
+  
+
+
 }

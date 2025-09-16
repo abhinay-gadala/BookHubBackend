@@ -28,9 +28,13 @@ export const registerUser = async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(201).json({ message: "User registered successfully",
-       token, 
-       userId: newUser._id 
+    res.status(201).json({ 
+       message: "User registered successfully",
+       token,
+        user: {
+          id: newUser._id,
+          role: "user",
+        },
       });
 
   } catch (err) {
@@ -39,32 +43,56 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// ✅ Login User
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (
+      email === process.env.AUTHORIZED_EMAIL &&
+      password === process.env.AUTHORIZED_PASSWORD
+    ) {
+      const adminId = process.env.AUTHORIZED_ID || "68c850ff96acdbd5b692698e"; // fallback if not set
 
-    // Find user by email
+      const token = jwt.sign(
+        { id: adminId, role: "admin" },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      return res.status(200).json({
+        message: "Login successful (Hardcoded Admin)",
+        token,
+        user: {
+          id: adminId,
+          role: "admin",
+        },
+      });
+    }
+
+    // 2️⃣ Normal DB User
     const user = await usersModel.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Generate JWT Token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: "user" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-    res.status(200).json({
-      message: "Login successful",
+    return res.status(200).json({
+      message: "Login successful (DB User)",
       token,
-      userId: user._id
+      user: {
+        id: user._id,
+        role: "user",
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Error logging in", error: err.message });
