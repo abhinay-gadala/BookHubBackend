@@ -13,6 +13,7 @@ const bookSchema = new mongoose.Schema({
   Description: { type: String, required: true },
   PublishedDate: { type: Date, required: true },
   CompanyRights: { type: String, required: true },
+  BookLink: { type: String, required: true },
 });
 
 const bookData = mongoose.model("Book", bookSchema);
